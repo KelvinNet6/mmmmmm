@@ -1,43 +1,50 @@
 const express = require('express');
-const cors = require('cors');
 const mysql = require('mysql2');
+const cors = require('cors');
+
 const app = express();
 const PORT = 3000;
 
 // Middleware
-app.use(cors()); // Allow GitHub Pages frontend
-app.use(express.json()); // Parse JSON body
+app.use(cors());
+app.use(express.json());  // To parse JSON request body
 
-// MySQL connection
+// MySQL database connection
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: 'your_password',
-  database: 'your_database'
+  password: 'your_password',   // Replace with your actual password
+  database: 'your_database'    // Replace with your actual database name
 });
 
-db.connect(err => {
+db.connect((err) => {
   if (err) {
-    console.error('DB connection failed:', err);
-  } else {
-    console.log('Connected to MySQL');
+    console.error('❌ Database connection failed:', err);
+    return;
   }
+  console.log('✅ Connected to MySQL database');
 });
 
-// Login route
+// Login endpoint
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
-  const sql = 'SELECT * FROM users WHERE username = ? AND password = ?';
-  db.query(sql, [username, password], (err, results) => {
-    if (err) return res.status(500).json({ message: 'Server error' });
+  const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
+  db.query(query, [username, password], (err, results) => {
+    if (err) {
+      console.error('❌ Query error:', err);
+      return res.status(500).json({ message: 'Server error' });
+    }
 
     if (results.length > 0) {
-      res.json({ message: 'Login successful!' });
+      res.json({ message: '✅ Login successful!' });
     } else {
-      res.json({ message: 'Invalid credentials' });
+      res.json({ message: '❌ Invalid credentials' });
     }
   });
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Start the server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
